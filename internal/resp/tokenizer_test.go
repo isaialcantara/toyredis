@@ -104,4 +104,21 @@ func TestNextToken(t *testing.T) {
 			assert.Equal(t, tc.err, err)
 		}
 	})
+
+	t.Run("test bulk string empty and null don't require bulk data", func(t *testing.T) {
+		r := strings.NewReader("*3\r\n$0\r\n$-1\r\n$3\r\nend\r\n")
+		tokenizer := NewFSMTokenizer(r)
+
+		for _, expected := range []Token{
+			BulkArrStartToken{Length: 3},
+			BulkStringStartToken{Length: 0},
+			BulkStringStartToken{Length: -1},
+			BulkStringStartToken{Length: 3},
+			BulkDataToken{Data: []byte("end")},
+		} {
+			token, err := tokenizer.NextToken()
+			assert.NoError(t, err)
+			assert.Equal(t, expected, token)
+		}
+	})
 }
