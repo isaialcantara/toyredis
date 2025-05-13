@@ -7,13 +7,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNextToken(t *testing.T) {
-	t.Run("test SET", func(t *testing.T) {
+func TestFSMTokenizer_NextToken(t *testing.T) {
+	t.Run("return a single token per call", func(t *testing.T) {
 		r := strings.NewReader("*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$-1\r\n")
 		tokenizer := NewFSMTokenizer(r)
 
 		for _, expected := range []Token{
-			BulkArrStartToken{Length: 3},
+			BulkArrayStartToken{Length: 3},
 			BulkStringStartToken{Length: 3},
 			BulkDataToken{Data: []byte("SET")},
 			BulkStringStartToken{Length: 3},
@@ -27,7 +27,7 @@ func TestNextToken(t *testing.T) {
 		}
 	})
 
-	t.Run("test unknown type", func(t *testing.T) {
+	t.Run("fail with unknown type", func(t *testing.T) {
 		r := strings.NewReader("+PING\r\n")
 		tokenizer := NewFSMTokenizer(r)
 
@@ -36,14 +36,14 @@ func TestNextToken(t *testing.T) {
 		assert.ErrorIs(t, err, ErrProtocolInvalidType)
 	})
 
-	t.Run("test bulk arr start", func(t *testing.T) {
+	t.Run("return bulk array start token", func(t *testing.T) {
 		for _, tc := range []struct {
 			line  string
 			token Token
 			err   error
 		}{
-			{"*1\r\n", BulkArrStartToken{Length: 1}, nil},
-			{"*0\r\n", BulkArrStartToken{Length: 0}, nil},
+			{"*1\r\n", BulkArrayStartToken{Length: 1}, nil},
+			{"*0\r\n", BulkArrayStartToken{Length: 0}, nil},
 			{"*-1\r\n", nil, ErrProtocolInvalidBulkArrLength},
 			{"*abc\r\n", nil, ErrProtocolInvalidBulkArrLength},
 			{"*123", nil, ErrProtocolInvalidBulkArrLength},
@@ -58,7 +58,7 @@ func TestNextToken(t *testing.T) {
 		}
 	})
 
-	t.Run("test bulk string start", func(t *testing.T) {
+	t.Run("return bulk string start token", func(t *testing.T) {
 		for _, tc := range []struct {
 			line  string
 			token Token
@@ -81,7 +81,7 @@ func TestNextToken(t *testing.T) {
 		}
 	})
 
-	t.Run("test bulk data", func(t *testing.T) {
+	t.Run("return bulk data token", func(t *testing.T) {
 		for _, tc := range []struct {
 			line  string
 			token Token
@@ -105,12 +105,12 @@ func TestNextToken(t *testing.T) {
 		}
 	})
 
-	t.Run("test bulk string empty and null don't require bulk data", func(t *testing.T) {
+	t.Run("bulk string empty and null don't require bulk data", func(t *testing.T) {
 		r := strings.NewReader("*3\r\n$0\r\n$-1\r\n$3\r\nend\r\n")
 		tokenizer := NewFSMTokenizer(r)
 
 		for _, expected := range []Token{
-			BulkArrStartToken{Length: 3},
+			BulkArrayStartToken{Length: 3},
 			BulkStringStartToken{Length: 0},
 			BulkStringStartToken{Length: -1},
 			BulkStringStartToken{Length: 3},

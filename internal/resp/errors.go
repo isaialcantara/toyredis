@@ -1,19 +1,26 @@
 package resp
 
-type customError string
+type ProtocolError string
 
-func (e customError) Error() string { return string(e) }
+func (e ProtocolError) Error() string {
+	return "ERR Protocol error: " + string(e)
+}
+
+func (e ProtocolError) ToRESP() []byte {
+	withPrefix := append([]byte{'-'}, []byte(e.Error())...)
+	return append(withPrefix, '\r', '\n')
+}
 
 const (
 	// Tokenizer
-	ErrProtocolInvalidType          = customError("ERR Protocol error: invalid input type")
-	ErrProtocolInvalidBulkArrLength = customError("ERR Protocol error: invalid bulk string array length")
-	ErrProtocolInvalidBulkLength    = customError("ERR Protocol error: invalid bulk string length")
-	ErrProtocolNoCRLF               = customError("ERR Protocol error: line was not terminated with a CRLF")
-	ErrProtocolMissingBulkData      = customError("ERR Protocol error: missing bulk string data")
+	ErrProtocolInvalidType          = ProtocolError("invalid input type")
+	ErrProtocolInvalidBulkArrLength = ProtocolError("invalid bulk string array length")
+	ErrProtocolInvalidBulkLength    = ProtocolError("invalid bulk string length")
+	ErrProtocolNoCRLF               = ProtocolError("line was not terminated with a CRLF")
+	ErrProtocolMissingBulkData      = ProtocolError("missing bulk string data")
 
 	// Parser
-	ErrProtocolNotBulkArray         = customError("ERR Protocol error: input isn't a bulk string array")
-	ErrProtocolIncompleteBulkArray  = customError("ERR Protocol error: input bulk array is incomplete")
-	ErrProtocolIncompleteBulkString = customError("ERR Protocol error: input bulk string is missing its data line")
+	ErrProtocolNotBulkArray         = ProtocolError("input isn't a bulk string array")
+	ErrProtocolIncompleteBulkArray  = ProtocolError("input bulk array is incomplete")
+	ErrProtocolIncompleteBulkString = ProtocolError("input bulk string is missing its data line")
 )
