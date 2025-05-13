@@ -9,5 +9,5 @@ fmt:
 build:
 	go build ./...
 
-run:
+serve:
 	go run ./cmd/server/main.go
