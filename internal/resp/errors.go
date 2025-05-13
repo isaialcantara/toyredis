@@ -22,5 +22,5 @@ const (
 	// Parser
 	ErrProtocolNotBulkArray         = ProtocolError("input isn't a bulk string array")
 	ErrProtocolIncompleteBulkArray  = ProtocolError("input bulk array is incomplete")
-	ErrProtocolIncompleteBulkString = ProtocolError("input bulk string is missing its data line")
+	ErrProtocolIncompleteBulkString = ProtocolError("input bulk string is incomplete")
 )

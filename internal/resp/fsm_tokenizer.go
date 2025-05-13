@@ -104,7 +104,7 @@ func (t *FSMTokenizer) handleBulkStart() (Token, error) {
 	str = strings.TrimSuffix(str, "\r\n")
 
 	length, err := strconv.ParseInt(str, 10, 64)
-	if err != nil || length < -1 {
+	if err != nil || length < 0 {
 		return nil, ErrProtocolInvalidBulkLength
 	}
 

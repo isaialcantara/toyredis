@@ -43,23 +43,21 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		assert.Equal(t, expected, bulkArray)
 	})
 
-	t.Run("returns null and empty bulk strings", func(t *testing.T) {
+	t.Run("returns empty bulk strings", func(t *testing.T) {
 		tokenizer := &MockTokenizer{
 			tokens: []Token{
-				BulkArrayStartToken{Length: 3},
+				BulkArrayStartToken{Length: 2},
 				BulkStringStartToken{Length: 3},
 				BulkDataToken{Data: []byte("SET")},
 				BulkStringStartToken{Length: 0},
-				BulkStringStartToken{Length: -1},
 			},
 		}
 		parser := NewBasicParser(tokenizer)
 		expected := BulkArray{
-			declaredLength: 3,
+			declaredLength: 2,
 			BulkStrings: []BulkString{
 				{declaredLength: 3, Data: []byte("SET")},
 				{declaredLength: 0, Data: []byte{}},
-				{declaredLength: -1, Data: nil},
 			},
 		}
 
@@ -142,12 +140,26 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		assert.ErrorIs(t, err, ErrProtocolIncompleteBulkArray)
 	})
 
-	t.Run("returns error with incomplete bulk string", func(t *testing.T) {
+	t.Run("returns error with bulk string missing it's data field", func(t *testing.T) {
 		tokenizer := &MockTokenizer{
 			tokens: []Token{
 				BulkArrayStartToken{Length: 2},
 				BulkStringStartToken{Length: 4},
 				BulkStringStartToken{Length: 4},
+			},
+		}
+		parser := NewBasicParser(tokenizer)
+
+		_, err := parser.NextBulkArray()
+		assert.ErrorIs(t, err, ErrProtocolIncompleteBulkString)
+	})
+
+	t.Run("returns error with incomplete bulk string", func(t *testing.T) {
+		tokenizer := &MockTokenizer{
+			tokens: []Token{
+				BulkArrayStartToken{Length: 1},
+				BulkStringStartToken{Length: 2},
+				BulkDataToken{Data: []byte("a")},
 			},
 		}
 		parser := NewBasicParser(tokenizer)

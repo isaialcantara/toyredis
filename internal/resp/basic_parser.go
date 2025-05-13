@@ -39,11 +39,7 @@ func (p *BasicParser) readBulkArrayItems(bulkArray BulkArray) (BulkArray, error)
 			return BulkArray{}, ErrProtocolIncompleteBulkArray
 		}
 
-		bulkString := BulkString{declaredLength: bulkStringStartToken.Length}
-
-		if bulkString.declaredLength == 0 {
-			bulkString.Data = []byte{}
-		}
+		bulkString := BulkString{declaredLength: bulkStringStartToken.Length, Data: []byte{}}
 
 		if bulkString.declaredLength > 0 {
 			token, err := p.tokenizer.NextToken()
@@ -56,6 +52,10 @@ func (p *BasicParser) readBulkArrayItems(bulkArray BulkArray) (BulkArray, error)
 			} else {
 				return BulkArray{}, ErrProtocolIncompleteBulkString
 			}
+		}
+
+		if bulkString.declaredLength != int64(len(bulkString.Data)) {
+			return BulkArray{}, ErrProtocolIncompleteBulkString
 		}
 
 		bulkArray.BulkStrings = append(bulkArray.BulkStrings, bulkString)
