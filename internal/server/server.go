@@ -44,6 +44,7 @@ func handleConn(conn net.Conn) {
 	defer log.Printf("Connection closed. %+v", conn)
 	tokenizer := resp.NewFSMTokenizer(conn)
 	parser := resp.NewBasicParser(tokenizer)
+	dispatcher := command.NewCommandDispatcher()
 
 	for {
 		bulkArray, err := parser.NextBulkArray()
@@ -55,7 +56,7 @@ func handleConn(conn net.Conn) {
 			return
 		}
 
-		response, err := command.DispatchCommand(bulkArray)
+		response, err := dispatcher.Dispatch(bulkArray)
 		if err != nil {
 			var respErr resp.RESPType
 			if errors.As(err, &respErr) {

@@ -32,8 +32,8 @@ func (s BulkString) ToRESP() []byte {
 		return lengthLine
 	}
 
-	dataLine := append(s, '\r', '\n')
-	return append(lengthLine, dataLine...)
+	s = append(s, '\r', '\n')
+	return append(lengthLine, s...)
 }
 
 type Integer int64

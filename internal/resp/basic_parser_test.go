@@ -4,14 +4,14 @@ import (
 	"io"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewBasicParser(t *testing.T) {
 	t.Run("test 1", func(t *testing.T) {
 		tokenizer := &MockTokenizer{tokens: []Token{}, err: nil}
 		expected := &BasicParser{tokenizer}
-		assert.Equal(t, expected, NewBasicParser(tokenizer))
+		require.Equal(t, expected, NewBasicParser(tokenizer))
 	})
 }
 
@@ -36,8 +36,8 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		}
 
 		bulkArray, err := parser.NextBulkArray()
-		assert.NoError(t, err)
-		assert.Equal(t, expected, bulkArray)
+		require.NoError(t, err)
+		require.Equal(t, expected, bulkArray)
 	})
 
 	t.Run("returns empty bulk strings", func(t *testing.T) {
@@ -56,8 +56,8 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		}
 
 		bulkArray, err := parser.NextBulkArray()
-		assert.NoError(t, err)
-		assert.Equal(t, expected, bulkArray)
+		require.NoError(t, err)
+		require.Equal(t, expected, bulkArray)
 	})
 
 	t.Run("returns empty bulk array", func(t *testing.T) {
@@ -69,8 +69,8 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		expected := BulkArray{}
 
 		bulkArray, err := parser.NextBulkArray()
-		assert.NoError(t, err)
-		assert.Equal(t, expected, bulkArray)
+		require.NoError(t, err)
+		require.Equal(t, expected, bulkArray)
 	})
 
 	t.Run("returns error with tokenizer error in array declaration", func(t *testing.T) {
@@ -78,7 +78,7 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		parser := NewBasicParser(tokenizer)
 
 		_, err := parser.NextBulkArray()
-		assert.ErrorIs(t, err, ErrProtocolNoCRLF)
+		require.ErrorIs(t, err, ErrProtocolNoCRLF)
 	})
 
 	t.Run("returns error with tokenizer error in bulk string declaration", func(t *testing.T) {
@@ -89,7 +89,7 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		parser := NewBasicParser(tokenizer)
 
 		_, err := parser.NextBulkArray()
-		assert.ErrorIs(t, err, ErrProtocolInvalidBulkLength)
+		require.ErrorIs(t, err, ErrProtocolInvalidBulkLength)
 	})
 
 	t.Run("returns error with tokenizer error in bulk data", func(t *testing.T) {
@@ -103,7 +103,7 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		parser := NewBasicParser(tokenizer)
 
 		_, err := parser.NextBulkArray()
-		assert.ErrorIs(t, err, ErrProtocolMissingBulkData)
+		require.ErrorIs(t, err, ErrProtocolMissingBulkData)
 	})
 
 	t.Run("return error when the input isn't a bulk array", func(t *testing.T) {
@@ -116,7 +116,7 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		parser := NewBasicParser(tokenizer)
 
 		_, err := parser.NextBulkArray()
-		assert.ErrorIs(t, err, ErrProtocolNotBulkArray)
+		require.ErrorIs(t, err, ErrProtocolNotBulkArray)
 	})
 
 	t.Run("returns error with incomplete bulk array", func(t *testing.T) {
@@ -131,7 +131,7 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		parser := NewBasicParser(tokenizer)
 
 		_, err := parser.NextBulkArray()
-		assert.ErrorIs(t, err, ErrProtocolIncompleteBulkArray)
+		require.ErrorIs(t, err, ErrProtocolIncompleteBulkArray)
 	})
 
 	t.Run("returns error with bulk string missing it's data field", func(t *testing.T) {
@@ -145,7 +145,7 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		parser := NewBasicParser(tokenizer)
 
 		_, err := parser.NextBulkArray()
-		assert.ErrorIs(t, err, ErrProtocolIncompleteBulkString)
+		require.ErrorIs(t, err, ErrProtocolIncompleteBulkString)
 	})
 
 	t.Run("returns error with incomplete bulk string", func(t *testing.T) {
@@ -159,7 +159,7 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		parser := NewBasicParser(tokenizer)
 
 		_, err := parser.NextBulkArray()
-		assert.ErrorIs(t, err, ErrProtocolIncompleteBulkString)
+		require.ErrorIs(t, err, ErrProtocolIncompleteBulkString)
 	})
 
 	t.Run("return error when tokenizer returns EOF before completing bulk array", func(t *testing.T) {
@@ -174,6 +174,6 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		parser := NewBasicParser(tokenizer)
 
 		_, err := parser.NextBulkArray()
-		assert.ErrorIs(t, err, io.EOF)
+		require.ErrorIs(t, err, io.EOF)
 	})
 }

@@ -52,12 +52,12 @@ func (t *FSMTokenizer) NextToken() (Token, error) {
 }
 
 func (t *FSMTokenizer) handleType() (Token, error) {
-	byte, err := t.reader.ReadByte()
+	b, err := t.reader.ReadByte()
 	if err != nil {
 		return nil, err
 	}
 
-	switch byte {
+	switch b {
 	case '*':
 		t.state = stateArrStart
 	case '$':

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFSMTokenizer_NextToken(t *testing.T) {
@@ -21,8 +21,8 @@ func TestFSMTokenizer_NextToken(t *testing.T) {
 		} {
 			token, err := tokenizer.NextToken()
 
-			assert.NoError(t, err)
-			assert.Equal(t, expected, token)
+			require.NoError(t, err)
+			require.Equal(t, expected, token)
 		}
 	})
 
@@ -31,8 +31,8 @@ func TestFSMTokenizer_NextToken(t *testing.T) {
 		tokenizer := NewFSMTokenizer(r)
 
 		token, err := tokenizer.NextToken()
-		assert.Nil(t, token)
-		assert.ErrorIs(t, err, ErrProtocolInvalidType)
+		require.Nil(t, token)
+		require.ErrorIs(t, err, ErrProtocolInvalidType)
 	})
 
 	t.Run("return bulk array start token", func(t *testing.T) {
@@ -52,8 +52,8 @@ func TestFSMTokenizer_NextToken(t *testing.T) {
 			r := strings.NewReader(tc.line)
 			tokenizer := NewFSMTokenizer(r)
 			token, err := tokenizer.NextToken()
-			assert.Equal(t, tc.token, token)
-			assert.Equal(t, tc.err, err)
+			require.Equal(t, tc.token, token)
+			require.Equal(t, tc.err, err)
 		}
 	})
 
@@ -75,8 +75,8 @@ func TestFSMTokenizer_NextToken(t *testing.T) {
 			r := strings.NewReader(tc.line)
 			tokenizer := NewFSMTokenizer(r)
 			token, err := tokenizer.NextToken()
-			assert.Equal(t, tc.token, token)
-			assert.Equal(t, tc.err, err)
+			require.Equal(t, tc.token, token)
+			require.Equal(t, tc.err, err)
 		}
 	})
 
@@ -96,11 +96,11 @@ func TestFSMTokenizer_NextToken(t *testing.T) {
 			r := strings.NewReader(tc.line)
 			tokenizer := NewFSMTokenizer(r)
 			_, err := tokenizer.NextToken()
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			token, err := tokenizer.NextToken()
-			assert.Equal(t, tc.token, token)
-			assert.Equal(t, tc.err, err)
+			require.Equal(t, tc.token, token)
+			require.Equal(t, tc.err, err)
 		}
 	})
 
@@ -115,8 +115,8 @@ func TestFSMTokenizer_NextToken(t *testing.T) {
 			BulkDataToken{Data: []byte("end")},
 		} {
 			token, err := tokenizer.NextToken()
-			assert.NoError(t, err)
-			assert.Equal(t, expected, token)
+			require.NoError(t, err)
+			require.Equal(t, expected, token)
 		}
 	})
 }
