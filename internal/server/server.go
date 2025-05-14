@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/isaialcantara/toyredis/internal/command"
 	"github.com/isaialcantara/toyredis/internal/resp"
 )
 
@@ -40,34 +41,40 @@ func handleConn(conn net.Conn) {
 	parser := resp.NewBasicParser(tokenizer)
 
 	for {
-		array, err := parser.NextBulkArray()
+		bulkArray, err := parser.NextBulkArray()
 		if err != nil {
-			var perr resp.ProtocolError
-			if errors.As(err, &perr) {
-				writeError(conn, perr)
+			var respErr resp.RESPType
+			if errors.As(err, &respErr) {
+				writeError(conn, respErr)
 			}
 			return
 		}
 
-		log.Printf("%+v", array)
-		if err := writeOk(conn); err != nil {
-			log.Printf("failed to write OK: %v", err)
-			return
+		response, err := command.DispatchCommand(bulkArray)
+		if err != nil {
+			var respErr resp.RESPType
+			if errors.As(err, &respErr) {
+				writeError(conn, respErr)
+			}
+		} else {
+			if err := writeResponse(conn, response); err != nil {
+				log.Printf("failed to write response: %v", err)
+				return
+			}
 		}
 	}
 }
 
-func writeOk(conn net.Conn) error {
-	ok := resp.SimpleString("OK")
-	_, err := conn.Write(ok.ToRESP())
+func writeResponse(conn net.Conn, response resp.RESPType) error {
+	_, err := conn.Write(response.ToRESP())
 	return err
 }
 
-func writeError(conn net.Conn, perr resp.ProtocolError) {
-	_, err := conn.Write(perr.ToRESP())
+func writeError(conn net.Conn, respErr resp.RESPType) {
+	_, err := conn.Write(respErr.ToRESP())
 	if err != nil {
 		log.Printf("write error failed: %v", err)
 	}
 
-	log.Printf("parser error: %v", perr)
+	log.Printf("parser error: %v", respErr)
 }
