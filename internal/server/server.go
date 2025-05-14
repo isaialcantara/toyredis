@@ -11,10 +11,16 @@ import (
 )
 
 type Server struct {
-	Addr string
+	Addr       string
+	dispatcher *command.CommandDispatcher
 }
 
-func New(addr string) *Server { return &Server{addr} }
+func New(addr string) *Server {
+	return &Server{
+		Addr:       addr,
+		dispatcher: command.NewCommandDispatcher(),
+	}
+}
 
 func (s *Server) Start() error {
 	ln, err := net.Listen("tcp", s.Addr)
@@ -30,11 +36,11 @@ func (s *Server) Start() error {
 			continue
 		}
 
-		go handleConn(conn)
+		go handleConn(conn, s.dispatcher)
 	}
 }
 
-func handleConn(conn net.Conn) {
+func handleConn(conn net.Conn, dispatcher *command.CommandDispatcher) {
 	defer func() {
 		if err := conn.Close(); err != nil {
 			log.Printf("error closing connection. %v", err)
@@ -44,29 +50,21 @@ func handleConn(conn net.Conn) {
 	defer log.Printf("Connection closed. %+v", conn)
 	tokenizer := resp.NewFSMTokenizer(conn)
 	parser := resp.NewBasicParser(tokenizer)
-	dispatcher := command.NewCommandDispatcher()
 
 	for {
 		bulkArray, err := parser.NextBulkArray()
 		if err != nil {
-			var respErr resp.RESPType
+			var respErr resp.RESPError
 			if errors.As(err, &respErr) {
 				writeError(conn, respErr)
 			}
 			return
 		}
 
-		response, err := dispatcher.Dispatch(bulkArray)
-		if err != nil {
-			var respErr resp.RESPType
-			if errors.As(err, &respErr) {
-				writeError(conn, respErr)
-			}
-		} else {
-			if err := writeResponse(conn, response); err != nil {
-				log.Printf("failed to write response: %v", err)
-				return
-			}
+		response := dispatcher.Dispatch(bulkArray)
+		if err := writeResponse(conn, response); err != nil {
+			log.Printf("failed to write response: %v", err)
+			return
 		}
 	}
 }

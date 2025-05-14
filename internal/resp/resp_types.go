@@ -6,6 +6,25 @@ type RESPType interface {
 	ToRESP() []byte
 }
 
+type SimpleString string
+
+func (s SimpleString) ToRESP() []byte {
+	return []byte("+" + s + "\r\n")
+}
+
+type SimpleError string
+
+func (e SimpleError) ToRESP() []byte {
+	return []byte("-" + e + "\r\n")
+}
+
+type Integer int64
+
+func (i Integer) ToRESP() []byte {
+	str := fmt.Sprintf(":%d\r\n", i)
+	return []byte(str)
+}
+
 type BulkArray []BulkString
 
 func (a BulkArray) ToResp() []byte {
@@ -34,17 +53,4 @@ func (s BulkString) ToRESP() []byte {
 
 	s = append(s, '\r', '\n')
 	return append(lengthLine, s...)
-}
-
-type Integer int64
-
-func (i Integer) ToRESP() []byte {
-	str := fmt.Sprintf(":%d\r\n", i)
-	return []byte(str)
-}
-
-type SimpleString string
-
-func (s SimpleString) ToRESP() []byte {
-	return []byte("+" + s + "\r\n")
 }

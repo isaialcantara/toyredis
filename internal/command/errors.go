@@ -1,17 +1,9 @@
 package command
 
-type CommandError string
+import "github.com/isaialcantara/toyredis/internal/resp"
 
 const (
-	ErrCommandEmpty      = CommandError("empty command")
-	ErrCommandInvalid    = CommandError("invalid command")
-	ErrCommandArgsNumber = CommandError("wrong number or arguments")
+	ErrCommandEmpty      = resp.SimpleError("empty command")
+	ErrCommandInvalid    = resp.SimpleError("invalid command")
+	ErrCommandArgsNumber = resp.SimpleError("wrong number or arguments")
 )
-
-func (e CommandError) Error() string {
-	return "ERR Command error: " + string(e)
-}
-
-func (e CommandError) ToRESP() []byte {
-	return []byte("-" + e.Error() + "\r\n")
-}

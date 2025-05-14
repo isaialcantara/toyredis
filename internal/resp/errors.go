@@ -1,5 +1,10 @@
 package resp
 
+type RESPError interface {
+	error
+	RESPType
+}
+
 type ProtocolError string
 
 func (e ProtocolError) Error() string {

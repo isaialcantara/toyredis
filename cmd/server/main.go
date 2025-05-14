@@ -1,6 +1,8 @@
 package main
 
-import "github.com/isaialcantara/toyredis/internal/server"
+import (
+	"github.com/isaialcantara/toyredis/internal/server"
+)
 
 func main() {
 	server := server.New(":6379")
