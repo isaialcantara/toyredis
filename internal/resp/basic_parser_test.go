@@ -30,12 +30,9 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		}
 		parser := NewBasicParser(tokenizer)
 		expected := BulkArray{
-			declaredLength: 3,
-			BulkStrings: []BulkString{
-				{declaredLength: 3, Data: []byte("SET")},
-				{declaredLength: 3, Data: []byte("key")},
-				{declaredLength: 5, Data: []byte("value")},
-			},
+			BulkString("SET"),
+			BulkString("key"),
+			BulkString("value"),
 		}
 
 		bulkArray, err := parser.NextBulkArray()
@@ -54,11 +51,8 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 		}
 		parser := NewBasicParser(tokenizer)
 		expected := BulkArray{
-			declaredLength: 2,
-			BulkStrings: []BulkString{
-				{declaredLength: 3, Data: []byte("SET")},
-				{declaredLength: 0, Data: []byte{}},
-			},
+			BulkString("SET"),
+			BulkString{},
 		}
 
 		bulkArray, err := parser.NextBulkArray()
@@ -72,7 +66,7 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 			err:    nil,
 		}
 		parser := NewBasicParser(tokenizer)
-		expected := BulkArray{declaredLength: 0, BulkStrings: []BulkString{}}
+		expected := BulkArray{}
 
 		bulkArray, err := parser.NextBulkArray()
 		assert.NoError(t, err)

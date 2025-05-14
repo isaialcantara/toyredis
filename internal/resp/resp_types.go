@@ -6,39 +6,33 @@ type RESPType interface {
 	ToRESP() []byte
 }
 
-type BulkArray struct {
-	declaredLength int64
-	BulkStrings    []BulkString
-}
+type BulkArray []BulkString
 
 func (a BulkArray) ToResp() []byte {
-	lengthStr := fmt.Sprintf("$%d\r\n", a.declaredLength)
+	lengthStr := fmt.Sprintf("$%d\r\n", len(a))
 	lengthLine := []byte(lengthStr)
-	if a.declaredLength < 1 {
+	if len(a) < 1 {
 		return lengthLine
 	}
 
 	bulkStringsLines := []byte{}
-	for _, bulkString := range a.BulkStrings {
+	for _, bulkString := range a {
 		bulkStringsLines = append(bulkStringsLines, bulkString.ToRESP()...)
 	}
 
 	return append(lengthLine, bulkStringsLines...)
 }
 
-type BulkString struct {
-	declaredLength int64
-	Data           []byte
-}
+type BulkString []byte
 
 func (s BulkString) ToRESP() []byte {
-	lengthStr := fmt.Sprintf("$%d\r\n", s.declaredLength)
+	lengthStr := fmt.Sprintf("$%d\r\n", len(s))
 	lengthLine := []byte(lengthStr)
-	if s.declaredLength < 1 {
+	if len(s) < 1 {
 		return lengthLine
 	}
 
-	dataLine := append(s.Data, '\r', '\n')
+	dataLine := append(s, '\r', '\n')
 	return append(lengthLine, dataLine...)
 }
 
