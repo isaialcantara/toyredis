@@ -7,8 +7,7 @@ func (e ProtocolError) Error() string {
 }
 
 func (e ProtocolError) ToRESP() []byte {
-	withPrefix := append([]byte{'-'}, []byte(e.Error())...)
-	return append(withPrefix, '\r', '\n')
+	return []byte("-" + e.Error() + "\r\n")
 }
 
 const (

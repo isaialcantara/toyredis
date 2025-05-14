@@ -13,6 +13,5 @@ func (e CommandError) Error() string {
 }
 
 func (e CommandError) ToRESP() []byte {
-	withPrefix := "-" + e.Error()
-	return append([]byte(withPrefix), '\r', '\n')
+	return []byte("-" + e.Error() + "\r\n")
 }

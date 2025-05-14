@@ -46,6 +46,5 @@ func (i Integer) ToRESP() []byte {
 type SimpleString string
 
 func (s SimpleString) ToRESP() []byte {
-	withPrefix := append([]byte{'+'}, []byte(s)...)
-	return append(withPrefix, '\r', '\n')
+	return []byte("+" + s + "\r\n")
 }

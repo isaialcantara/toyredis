@@ -35,7 +35,12 @@ func (s *Server) Start() error {
 }
 
 func handleConn(conn net.Conn) {
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			log.Printf("error closing connection. %v", err)
+		}
+	}()
+
 	defer log.Printf("Connection closed. %+v", conn)
 	tokenizer := resp.NewFSMTokenizer(conn)
 	parser := resp.NewBasicParser(tokenizer)
