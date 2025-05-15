@@ -4,10 +4,12 @@ type Tokenizer interface {
 	NextToken() (Token, error)
 }
 
-type Token any
+type Token struct {
+	Type   string
+	Length int64
+	Data   []byte
+}
 
-type (
-	BulkArrayStartToken  struct{ Length int64 }
-	BulkStringStartToken struct{ Length int64 }
-	BulkDataToken        struct{ Data []byte }
-)
+func newBulkArrayStartToken(length int64) Token  { return Token{Type: "bulkArrayStart", Length: length} }
+func newBulkStringStartToken(length int64) Token { return Token{Type: "bulkStart", Length: length} }
+func newBulkDataToken(data []byte) Token         { return Token{Type: "bulkData", Data: data} }

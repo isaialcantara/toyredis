@@ -19,13 +19,13 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 	t.Run("returns the right RESP types", func(t *testing.T) {
 		tokenizer := &MockTokenizer{
 			tokens: []Token{
-				BulkArrayStartToken{Length: 3},
-				BulkStringStartToken{Length: 3},
-				BulkDataToken{Data: []byte("SET")},
-				BulkStringStartToken{Length: 3},
-				BulkDataToken{Data: []byte("key")},
-				BulkStringStartToken{Length: 5},
-				BulkDataToken{Data: []byte("value")},
+				{Type: "bulkArrayStart", Length: 3},
+				{Type: "bulkStart", Length: 3},
+				{Type: "bulkData", Data: []byte("SET")},
+				{Type: "bulkStart", Length: 3},
+				{Type: "bulkData", Data: []byte("key")},
+				{Type: "bulkStart", Length: 5},
+				{Type: "bulkData", Data: []byte("value")},
 			},
 		}
 		parser := NewBasicParser(tokenizer)
@@ -43,10 +43,10 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 	t.Run("returns empty bulk strings", func(t *testing.T) {
 		tokenizer := &MockTokenizer{
 			tokens: []Token{
-				BulkArrayStartToken{Length: 2},
-				BulkStringStartToken{Length: 3},
-				BulkDataToken{Data: []byte("SET")},
-				BulkStringStartToken{Length: 0},
+				{Type: "bulkArrayStart", Length: 2},
+				{Type: "bulkStart", Length: 3},
+				{Type: "bulkData", Data: []byte("SET")},
+				{Type: "bulkStart", Length: 0},
 			},
 		}
 		parser := NewBasicParser(tokenizer)
@@ -62,7 +62,7 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 
 	t.Run("returns empty bulk array", func(t *testing.T) {
 		tokenizer := &MockTokenizer{
-			tokens: []Token{BulkArrayStartToken{Length: 0}},
+			tokens: []Token{{Type: "bulkArrayStart", Length: 0}},
 			err:    nil,
 		}
 		parser := NewBasicParser(tokenizer)
@@ -83,7 +83,7 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 
 	t.Run("returns error with tokenizer error in bulk string declaration", func(t *testing.T) {
 		tokenizer := &MockTokenizer{
-			tokens: []Token{BulkArrayStartToken{Length: 3}},
+			tokens: []Token{{Type: "bulkArrayStart", Length: 3}},
 			err:    ErrProtocolInvalidBulkLength,
 		}
 		parser := NewBasicParser(tokenizer)
@@ -95,8 +95,8 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 	t.Run("returns error with tokenizer error in bulk data", func(t *testing.T) {
 		tokenizer := &MockTokenizer{
 			tokens: []Token{
-				BulkArrayStartToken{Length: 3},
-				BulkStringStartToken{Length: 1},
+				{Type: "bulkArrayStart", Length: 3},
+				{Type: "bulkStart", Length: 1},
 			},
 			err: ErrProtocolMissingBulkData,
 		}
@@ -109,8 +109,8 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 	t.Run("return error when the input isn't a bulk array", func(t *testing.T) {
 		tokenizer := &MockTokenizer{
 			tokens: []Token{
-				BulkStringStartToken{Length: 4},
-				BulkDataToken{Data: []byte("PING")},
+				{Type: "bulkStart", Length: 4},
+				{Type: "bulkData", Data: []byte("PING")},
 			},
 		}
 		parser := NewBasicParser(tokenizer)
@@ -122,10 +122,10 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 	t.Run("returns error with incomplete bulk array", func(t *testing.T) {
 		tokenizer := &MockTokenizer{
 			tokens: []Token{
-				BulkArrayStartToken{Length: 2},
-				BulkArrayStartToken{Length: 0},
-				BulkStringStartToken{Length: 4},
-				BulkDataToken{Data: []byte("PING")},
+				{Type: "bulkArrayStart", Length: 2},
+				{Type: "bulkArrayStart", Length: 0},
+				{Type: "bulkStart", Length: 4},
+				{Type: "bulkData", Data: []byte("PING")},
 			},
 		}
 		parser := NewBasicParser(tokenizer)
@@ -137,9 +137,9 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 	t.Run("returns error with bulk string missing it's data field", func(t *testing.T) {
 		tokenizer := &MockTokenizer{
 			tokens: []Token{
-				BulkArrayStartToken{Length: 2},
-				BulkStringStartToken{Length: 4},
-				BulkStringStartToken{Length: 4},
+				{Type: "bulkArrayStart", Length: 2},
+				{Type: "bulkStart", Length: 4},
+				{Type: "bulkStart", Length: 4},
 			},
 		}
 		parser := NewBasicParser(tokenizer)
@@ -151,9 +151,9 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 	t.Run("returns error with incomplete bulk string", func(t *testing.T) {
 		tokenizer := &MockTokenizer{
 			tokens: []Token{
-				BulkArrayStartToken{Length: 1},
-				BulkStringStartToken{Length: 2},
-				BulkDataToken{Data: []byte("a")},
+				{Type: "bulkArrayStart", Length: 1},
+				{Type: "bulkStart", Length: 2},
+				{Type: "bulkData", Data: []byte("a")},
 			},
 		}
 		parser := NewBasicParser(tokenizer)
@@ -165,9 +165,9 @@ func TestBasicParser_NextBulkArray(t *testing.T) {
 	t.Run("return error when tokenizer returns EOF before completing bulk array", func(t *testing.T) {
 		tokenizer := &MockTokenizer{
 			tokens: []Token{
-				BulkArrayStartToken{Length: 2},
-				BulkStringStartToken{Length: 4},
-				BulkDataToken{Data: []byte("PING")},
+				{Type: "bulkArrayStart", Length: 2},
+				{Type: "bulkStart", Length: 4},
+				{Type: "bulkData", Data: []byte("PING")},
 			},
 			err: io.EOF,
 		}

@@ -7,7 +7,7 @@ type MockTokenizer struct {
 
 func (t *MockTokenizer) NextToken() (Token, error) {
 	if len(t.tokens) == 0 {
-		return nil, t.err
+		return Token{}, t.err
 	}
 
 	token := t.tokens[0]

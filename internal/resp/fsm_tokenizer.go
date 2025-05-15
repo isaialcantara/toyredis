@@ -19,7 +19,7 @@ type tokenizerState int
 
 const (
 	stateType tokenizerState = iota
-	stateArrStart
+	stateArrayStart
 	stateBulkStart
 	stateBulkData
 )
@@ -36,8 +36,8 @@ func (t *FSMTokenizer) NextToken() (Token, error) {
 	case stateType:
 		return t.handleType()
 
-	case stateArrStart:
-		return t.handleArrStart()
+	case stateArrayStart:
+		return t.handleArrayStart()
 
 	case stateBulkStart:
 		return t.handleBulkStart()
@@ -47,65 +47,65 @@ func (t *FSMTokenizer) NextToken() (Token, error) {
 
 	default:
 		log.Panicf("Invalid tokenizer state %+v\n", t.state)
-		return nil, nil
+		return Token{}, nil
 	}
 }
 
 func (t *FSMTokenizer) handleType() (Token, error) {
 	b, err := t.reader.ReadByte()
 	if err != nil {
-		return nil, err
+		return Token{}, err
 	}
 
 	switch b {
 	case '*':
-		t.state = stateArrStart
+		t.state = stateArrayStart
 	case '$':
 		t.state = stateBulkStart
 
 	default:
-		return nil, ErrProtocolInvalidType
+		return Token{}, ErrProtocolInvalidType
 	}
 
 	return t.NextToken()
 }
 
-func (t *FSMTokenizer) handleArrStart() (Token, error) {
+func (t *FSMTokenizer) handleArrayStart() (Token, error) {
 	str, err := t.reader.ReadString('\n')
 	if err != nil {
-		return nil, ErrProtocolInvalidBulkArrLength
+		return Token{}, ErrProtocolInvalidBulkArrLength
 	}
 
 	if !strings.HasSuffix(str, "\r\n") {
-		return nil, ErrProtocolNoCRLF
+		return Token{}, ErrProtocolNoCRLF
 	}
 
 	str = strings.TrimSuffix(str, "\r\n")
 
 	length, err := strconv.ParseInt(str, 10, 64)
 	if err != nil || length < 0 {
-		return nil, ErrProtocolInvalidBulkArrLength
+		return Token{}, ErrProtocolInvalidBulkArrLength
 	}
 
 	t.state = stateType
-	return BulkArrayStartToken{Length: length}, nil
+	return newBulkArrayStartToken(length), nil
 }
 
 func (t *FSMTokenizer) handleBulkStart() (Token, error) {
 	str, err := t.reader.ReadString('\n')
 	if err != nil {
-		return nil, ErrProtocolInvalidBulkLength
+		return Token{}, ErrProtocolInvalidBulkLength
 	}
 
 	if !strings.HasSuffix(str, "\r\n") {
-		return nil, ErrProtocolNoCRLF
+		return Token{}, ErrProtocolNoCRLF
 	}
 
 	str = strings.TrimSuffix(str, "\r\n")
 
 	length, err := strconv.ParseInt(str, 10, 64)
 	if err != nil || length < 0 {
-		return nil, ErrProtocolInvalidBulkLength
+		return Token{}, ErrProtocolInvalidBulkLength
 	}
 
 	if length > 0 {
@@ -115,22 +115,22 @@ func (t *FSMTokenizer) handleBulkStart() (Token, error) {
 		t.state = stateType
 	}
 
-	return BulkStringStartToken{Length: length}, nil
+	return newBulkStringStartToken(length), nil
 }
 
 func (t *FSMTokenizer) handleBulkData() (Token, error) {
 	buf := make([]byte, t.currentBulkLength+2)
 	_, err := io.ReadFull(t.reader, buf)
 	if err != nil {
-		return nil, ErrProtocolMissingBulkData
+		return Token{}, ErrProtocolMissingBulkData
 	}
 
 	if !bytes.HasSuffix(buf, []byte("\r\n")) {
-		return nil, ErrProtocolNoCRLF
+		return Token{}, ErrProtocolNoCRLF
 	}
 
 	buf = bytes.TrimSuffix(buf, []byte("\r\n"))
 
 	t.state = stateType
-	return BulkDataToken{Data: buf}, nil
+	return newBulkDataToken(buf), nil
 }

@@ -14,18 +14,17 @@ func (p *BasicParser) NextBulkArray() (BulkArray, error) {
 		return BulkArray{}, err
 	}
 
-	arrStartToken, ok := token.(BulkArrayStartToken)
-	if !ok {
+	if token.Type != "bulkArrayStart" {
 		return BulkArray{}, ErrProtocolNotBulkArray
 	}
 
 	bulkArray := BulkArray{}
 
-	if arrStartToken.Length < 1 {
+	if token.Length < 1 {
 		return bulkArray, nil
 	}
 
-	return p.readBulkArrayItems(bulkArray, arrStartToken.Length)
+	return p.readBulkArrayItems(bulkArray, token.Length)
 }
 
 func (p *BasicParser) readBulkArrayItems(bulkArray BulkArray, arrayLength int64) (BulkArray, error) {
@@ -35,27 +34,26 @@ func (p *BasicParser) readBulkArrayItems(bulkArray BulkArray, arrayLength int64)
 			return BulkArray{}, err
 		}
 
-		bulkStringStartToken, ok := startToken.(BulkStringStartToken)
-		if !ok {
+		if startToken.Type != "bulkStart" {
 			return BulkArray{}, ErrProtocolIncompleteBulkArray
 		}
 
 		bulkString := BulkString{}
 
-		if bulkStringStartToken.Length > 0 {
-			token, err := p.tokenizer.NextToken()
+		if startToken.Length > 0 {
+			dataToken, err := p.tokenizer.NextToken()
 			if err != nil {
 				return BulkArray{}, err
 			}
 
-			if bulkDataToken, ok := token.(BulkDataToken); ok {
-				bulkString = bulkDataToken.Data
+			if dataToken.Type == "bulkData" {
+				bulkString = dataToken.Data
 			} else {
 				return BulkArray{}, ErrProtocolIncompleteBulkString
 			}
 		}
 
-		if bulkStringStartToken.Length != int64(len(bulkString)) {
+		if startToken.Length != int64(len(bulkString)) {
 			return BulkArray{}, ErrProtocolIncompleteBulkString
 		}
 
