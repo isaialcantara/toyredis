@@ -41,13 +41,13 @@ func (s *Server) Start() error {
 }
 
 func handleConn(conn net.Conn, dispatcher *command.CommandDispatcher) {
+	defer log.Println("Connection closed")
 	defer func() {
 		if err := conn.Close(); err != nil {
 			log.Printf("error closing connection. %v", err)
 		}
 	}()
 
-	defer log.Printf("Connection closed. %+v", conn)
 	tokenizer := resp.NewFSMTokenizer(conn)
 	parser := resp.NewBasicParser(tokenizer)
 
@@ -69,8 +69,8 @@ func handleConn(conn net.Conn, dispatcher *command.CommandDispatcher) {
 	}
 }
 
-func writeResponse(conn net.Conn, response resp.RESPType) error {
-	_, err := conn.Write(response.ToRESP())
+func writeResponse(conn net.Conn, response []byte) error {
+	_, err := conn.Write(response)
 	return err
 }
 

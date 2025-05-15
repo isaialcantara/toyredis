@@ -7,7 +7,7 @@ import (
 	"github.com/isaialcantara/toyredis/internal/resp"
 )
 
-type commandHandler func(resp.BulkArray) resp.RESPType
+type commandHandler func(resp.BulkArray) []byte
 
 type commandNode struct {
 	handler  commandHandler
@@ -32,16 +32,16 @@ func NewCommandDispatcher() *CommandDispatcher {
 	return dispatcher
 }
 
-func (d *CommandDispatcher) Dispatch(bulkArray resp.BulkArray) resp.RESPType {
+func (d *CommandDispatcher) Dispatch(bulkArray resp.BulkArray) []byte {
 	if len(bulkArray) < 1 {
-		return ErrCommandEmpty
+		return ErrCommandEmpty.ToRESP()
 	}
 
 	node := d.rootCommand
 	consumed := 0
 	for _, bulkString := range bulkArray {
 		if !utf8.Valid(bulkString) {
-			return ErrCommandInvalid
+			return ErrCommandInvalid.ToRESP()
 		}
 		key := strings.ToUpper(string(bulkString))
 		if nextCommand, ok := node.children[key]; ok {
@@ -55,7 +55,7 @@ func (d *CommandDispatcher) Dispatch(bulkArray resp.BulkArray) resp.RESPType {
 	if node.handler != nil {
 		return node.handler(bulkArray[consumed:])
 	}
-	return ErrCommandInvalid
+	return ErrCommandInvalid.ToRESP()
 }
 
 func (d *CommandDispatcher) registerCommand(path []string, handler commandHandler) *CommandDispatcher {
@@ -71,16 +71,16 @@ func (d *CommandDispatcher) registerCommand(path []string, handler commandHandle
 	return d
 }
 
-func pingHandler(args resp.BulkArray) resp.RESPType {
+func pingHandler(args resp.BulkArray) []byte {
 	if len(args) == 0 {
-		return resp.SimpleString("PONG")
+		return resp.SimpleString("PONG").ToRESP()
 	}
 	return echoHandler(args)
 }
 
-func echoHandler(args resp.BulkArray) resp.RESPType {
+func echoHandler(args resp.BulkArray) []byte {
 	if len(args) != 1 {
-		return ErrCommandArgsNumber
+		return ErrCommandArgsNumber.ToRESP()
 	}
-	return resp.SimpleString(string(args[0]))
+	return resp.SimpleString(string(args[0])).ToRESP()
 }
