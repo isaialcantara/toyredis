@@ -14,25 +14,25 @@ type commandNode struct {
 	children map[string]*commandNode
 }
 
-type CommandDispatcher struct {
+type BasicDispatcher struct {
 	rootCommand *commandNode
 }
 
-func NewCommandDispatcher() *CommandDispatcher {
-	dispatcher := &CommandDispatcher{
+func NewBasicDispatcher() *BasicDispatcher {
+	BasicDispatcher := &BasicDispatcher{
 		rootCommand: &commandNode{
 			children: make(map[string]*commandNode),
 		},
 	}
 
-	dispatcher.
+	BasicDispatcher.
 		registerCommand([]string{"PING"}, pingHandler).
 		registerCommand([]string{"ECHO"}, echoHandler)
 
-	return dispatcher
+	return BasicDispatcher
 }
 
-func (d *CommandDispatcher) Dispatch(bulkArray resp.BulkArray) []byte {
+func (d *BasicDispatcher) Dispatch(bulkArray resp.BulkArray) []byte {
 	if len(bulkArray) < 1 {
 		return ErrCommandEmpty.ToRESP()
 	}
@@ -58,7 +58,7 @@ func (d *CommandDispatcher) Dispatch(bulkArray resp.BulkArray) []byte {
 	return ErrCommandInvalid.ToRESP()
 }
 
-func (d *CommandDispatcher) registerCommand(path []string, handler commandHandler) *CommandDispatcher {
+func (d *BasicDispatcher) registerCommand(path []string, handler commandHandler) *BasicDispatcher {
 	node := d.rootCommand
 	for _, commandPart := range path {
 		key := strings.ToUpper(commandPart)

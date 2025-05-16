@@ -64,6 +64,7 @@ func (t *FSMTokenizer) handleType() (Token, error) {
 		t.state = stateBulkStart
 
 	default:
+		log.Printf("invalid type: %c", b)
 		return Token{}, ErrProtocolInvalidType
 	}
 

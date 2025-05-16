@@ -11,15 +11,12 @@ import (
 )
 
 type Server struct {
-	dispatcher *command.CommandDispatcher
+	dispatcher command.Dispatcher
 	Addr       string
 }
 
-func New(addr string) *Server {
-	return &Server{
-		Addr:       addr,
-		dispatcher: command.NewCommandDispatcher(),
-	}
+func New(addr string, dispatcher command.Dispatcher) *Server {
+	return &Server{dispatcher, addr}
 }
 
 func (s *Server) Start() error {
@@ -36,11 +33,11 @@ func (s *Server) Start() error {
 			continue
 		}
 
-		go handleConn(conn, s.dispatcher)
+		go s.handleConn(conn)
 	}
 }
 
-func handleConn(conn net.Conn, dispatcher *command.CommandDispatcher) {
+func (s *Server) handleConn(conn net.Conn) {
 	defer log.Println("Connection closed")
 	defer func() {
 		if err := conn.Close(); err != nil {
@@ -61,7 +58,7 @@ func handleConn(conn net.Conn, dispatcher *command.CommandDispatcher) {
 			return
 		}
 
-		response := dispatcher.Dispatch(bulkArray)
+		response := s.dispatcher.Dispatch(bulkArray)
 		if err := writeResponse(conn, response); err != nil {
 			log.Printf("failed to write response: %v", err)
 			return
