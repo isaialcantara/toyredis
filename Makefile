@@ -1,10 +1,13 @@
-.PHONY: test quality fmt build run
+.PHONY: test quality quality-fix fmt build run
 
 test:
 	go test ./...
 
 quality:
 	golangci-lint run
+
+quality-fix:
+	golangci-lint run --fix
 
 fmt:
 	gofumpt -w .

@@ -5,8 +5,8 @@ import (
 )
 
 func main() {
-	server := server.New(":6379")
-	err := server.Start()
+	myServer := server.New(":6379")
+	err := myServer.Start()
 	if err != nil {
 		panic(err)
 	}

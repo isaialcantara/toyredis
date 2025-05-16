@@ -1,8 +1,8 @@
 package resp
 
 type MockTokenizer struct {
-	tokens []Token
 	err    error
+	tokens []Token
 }
 
 func (t *MockTokenizer) NextToken() (Token, error) {

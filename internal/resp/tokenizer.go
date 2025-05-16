@@ -6,8 +6,8 @@ type Tokenizer interface {
 
 type Token struct {
 	Type   string
-	Length int64
 	Data   []byte
+	Length int64
 }
 
 func newBulkArrayStartToken(length int64) Token  { return Token{Type: "bulkArrayStart", Length: length} }

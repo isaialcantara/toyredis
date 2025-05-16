@@ -11,8 +11,8 @@ import (
 )
 
 type Server struct {
-	Addr       string
 	dispatcher *command.CommandDispatcher
+	Addr       string
 }
 
 func New(addr string) *Server {

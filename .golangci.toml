@@ -15,6 +15,7 @@ enable = [
   'gocritic',
   'iface',
   'inamedparam',
+  'ireturn',
   'nonamedreturns',
   'prealloc',
   'predeclared',
@@ -24,6 +25,11 @@ enable = [
   'unparam',
 ]
 
+[linters.settings]
+govet = { enable-all = true }
+gocritic = { enable-all = true }
+testifylint = { enable-all = true }
+
 [linters.exclusions]
 generated = 'lax'
 presets = ['comments', 'common-false-positives', 'legacy', 'std-error-handling']
@@ -32,6 +38,7 @@ paths = ['third_party$', 'builtin$', 'examples$']
 [formatters]
 enable = ['gofumpt']
 settings = { gofumpt = { extra-rules = true } }
+
 [formatters.exclusions]
 generated = 'lax'
 paths = ['third_party$', 'builtin$', 'examples$']
