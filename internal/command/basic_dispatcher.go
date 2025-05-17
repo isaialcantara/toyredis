@@ -82,5 +82,5 @@ func echoHandler(args resp.BulkArray) []byte {
 	if len(args) != 1 {
 		return ErrCommandArgsNumber.ToRESP()
 	}
-	return resp.SimpleString(string(args[0])).ToRESP()
+	return resp.BulkString(string(args[0])).ToRESP()
 }
