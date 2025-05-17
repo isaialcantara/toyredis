@@ -42,7 +42,7 @@ func (p *RESPParser) readBulkArray() (BulkArray, error) {
 	str = strings.TrimSuffix(str, "\r\n")
 
 	length, err := strconv.ParseInt(str, 10, 64)
-	if err != nil {
+	if err != nil || length < 0 {
 		return nil, ErrProtocolInvalidBulkArrayLength
 	}
 
@@ -78,7 +78,7 @@ func (p *RESPParser) readBulk() (BulkString, error) {
 	str = strings.TrimSuffix(str, "\r\n")
 
 	length, err := strconv.ParseInt(str, 10, 64)
-	if err != nil {
+	if err != nil || length < 0 {
 		return nil, ErrProtocolInvalidBulkLength
 	}
 

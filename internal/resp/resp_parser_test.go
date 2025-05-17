@@ -49,8 +49,16 @@ func TestRESPParser_NextBulkArray(t *testing.T) {
 		require.ErrorIs(t, err, ErrProtocolNoCRLF)
 	})
 
-	t.Run("return error with invalid bulk array length", func(t *testing.T) {
+	t.Run("return error with non integer bulk array length", func(t *testing.T) {
 		r := strings.NewReader("*abc\r\n")
+		parser := NewRESPParser(r)
+
+		_, err := parser.NextBulkArray()
+		require.ErrorIs(t, err, ErrProtocolInvalidBulkArrayLength)
+	})
+
+	t.Run("return error with negative bulk array length", func(t *testing.T) {
+		r := strings.NewReader("*-1\r\n")
 		parser := NewRESPParser(r)
 
 		_, err := parser.NextBulkArray()
@@ -79,6 +87,22 @@ func TestRESPParser_NextBulkArray(t *testing.T) {
 
 		_, err := parser.NextBulkArray()
 		require.ErrorIs(t, err, ErrProtocolNoBulkStart)
+	})
+
+	t.Run("return error with non integer bulk length", func(t *testing.T) {
+		r := strings.NewReader("*1\r\n$abc\r\n")
+		parser := NewRESPParser(r)
+
+		_, err := parser.NextBulkArray()
+		require.ErrorIs(t, err, ErrProtocolInvalidBulkLength)
+	})
+
+	t.Run("return error with negative bulk length", func(t *testing.T) {
+		r := strings.NewReader("*1\r\n$-1\r\n")
+		parser := NewRESPParser(r)
+
+		_, err := parser.NextBulkArray()
+		require.ErrorIs(t, err, ErrProtocolInvalidBulkLength)
 	})
 
 	t.Run("return error with incomplete bulk data", func(t *testing.T) {
