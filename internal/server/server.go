@@ -45,8 +45,7 @@ func (s *Server) handleConn(conn net.Conn) {
 		}
 	}()
 
-	tokenizer := resp.NewFSMTokenizer(conn)
-	parser := resp.NewBasicParser(tokenizer)
+	parser := resp.NewRESPParser(conn)
 
 	for {
 		bulkArray, err := parser.NextBulkArray()

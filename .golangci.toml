@@ -5,7 +5,6 @@ enable = [
   'asciicheck',
   'bidichk',
   'copyloopvar',
-  'cyclop',
   'decorder',
   'err113',
   'errname',

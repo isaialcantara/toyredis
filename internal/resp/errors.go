@@ -16,15 +16,10 @@ func (e ProtocolError) ToRESP() []byte {
 }
 
 const (
-	// Tokenizer
-	ErrProtocolInvalidType          = ProtocolError("invalid input type")
-	ErrProtocolInvalidBulkArrLength = ProtocolError("invalid bulk string array length")
-	ErrProtocolInvalidBulkLength    = ProtocolError("invalid bulk string length")
-	ErrProtocolNoCRLF               = ProtocolError("line was not terminated with a CRLF")
-	ErrProtocolMissingBulkData      = ProtocolError("missing bulk string data")
-
-	// Parser
-	ErrProtocolNotBulkArray         = ProtocolError("input isn't a bulk string array")
-	ErrProtocolIncompleteBulkArray  = ProtocolError("input bulk array is incomplete")
-	ErrProtocolIncompleteBulkString = ProtocolError("input bulk string is incomplete")
+	ErrProtocolNoCRLF                 = ProtocolError("line was not terminated with a CRLF")
+	ErrProtocolInvalidBulkArrayLength = ProtocolError("invalid bulk string array length")
+	ErrProtocolInvalidBulkLength      = ProtocolError("invalid bulk string length")
+	ErrProtocolMissingBulkData        = ProtocolError("missing bulk string data")
+	ErrProtocolNoBulkStart            = ProtocolError("no '$' was sent for bulk start")
+	ErrProtocolUnbalancedQuotes       = ProtocolError("unbalanced quotes in request")
 )
