@@ -10,6 +10,8 @@ type InlineParser struct {
 	reader *bufio.Reader
 }
 
+var _ Parser = (*InlineParser)(nil)
+
 func NewInlineParser(r io.Reader) *InlineParser {
 	return &InlineParser{bufio.NewReader(r)}
 }

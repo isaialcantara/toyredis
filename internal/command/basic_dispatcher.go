@@ -1,6 +1,7 @@
 package command
 
 import (
+	"log"
 	"strings"
 	"unicode/utf8"
 
@@ -18,18 +19,20 @@ type BasicDispatcher struct {
 	rootCommand *commandNode
 }
 
+var _ Dispatcher = (*BasicDispatcher)(nil)
+
 func NewBasicDispatcher() *BasicDispatcher {
-	BasicDispatcher := &BasicDispatcher{
+	dispatcher := &BasicDispatcher{
 		rootCommand: &commandNode{
 			children: make(map[string]*commandNode),
 		},
 	}
 
-	BasicDispatcher.
+	dispatcher.
 		registerCommand([]string{"PING"}, pingHandler).
 		registerCommand([]string{"ECHO"}, echoHandler)
 
-	return BasicDispatcher
+	return dispatcher
 }
 
 func (d *BasicDispatcher) Dispatch(bulkArray resp.BulkArray) []byte {
@@ -55,6 +58,7 @@ func (d *BasicDispatcher) Dispatch(bulkArray resp.BulkArray) []byte {
 	if node.handler != nil {
 		return node.handler(bulkArray[consumed:])
 	}
+	log.Printf("invalid command: %q", bulkArray.ToRESP())
 	return ErrCommandInvalid.ToRESP()
 }
 

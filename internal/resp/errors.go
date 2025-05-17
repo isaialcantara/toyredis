@@ -7,6 +7,8 @@ type RESPError interface {
 
 type ProtocolError string
 
+var _ RESPError = (*ProtocolError)(nil)
+
 func (e ProtocolError) Error() string {
 	return "ERR Protocol error: " + string(e)
 }

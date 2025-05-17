@@ -8,17 +8,23 @@ type RESPType interface {
 
 type SimpleString string
 
+var _ RESPType = (*SimpleString)(nil)
+
 func (s SimpleString) ToRESP() []byte {
 	return []byte("+" + s + "\r\n")
 }
 
 type SimpleError string
 
+var _ RESPType = (*SimpleError)(nil)
+
 func (e SimpleError) ToRESP() []byte {
 	return []byte("-" + e + "\r\n")
 }
 
 type Integer int64
+
+var _ RESPType = (*Integer)(nil)
 
 func (i Integer) ToRESP() []byte {
 	str := fmt.Sprintf(":%d\r\n", i)
@@ -27,8 +33,10 @@ func (i Integer) ToRESP() []byte {
 
 type BulkArray []BulkString
 
-func (a BulkArray) ToResp() []byte {
-	lengthStr := fmt.Sprintf("$%d\r\n", len(a))
+var _ RESPType = (*BulkArray)(nil)
+
+func (a BulkArray) ToRESP() []byte {
+	lengthStr := fmt.Sprintf("*%d\r\n", len(a))
 	lengthLine := []byte(lengthStr)
 	if len(a) < 1 {
 		return lengthLine
@@ -43,6 +51,8 @@ func (a BulkArray) ToResp() []byte {
 }
 
 type BulkString []byte
+
+var _ RESPType = (*BulkString)(nil)
 
 func (s BulkString) ToRESP() []byte {
 	lengthStr := fmt.Sprintf("$%d\r\n", len(s))

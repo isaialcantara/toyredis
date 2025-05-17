@@ -12,6 +12,8 @@ type RESPParser struct {
 	reader *bufio.Reader
 }
 
+var _ Parser = (*RESPParser)(nil)
+
 func NewRESPParser(r io.Reader) *RESPParser {
 	return &RESPParser{reader: bufio.NewReader(r)}
 }
