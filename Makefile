@@ -15,5 +15,5 @@ fmt:
 build:
 	go build ./...
 
-serve:
+run:
 	go run ./cmd/server/main.go

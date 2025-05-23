@@ -3,36 +3,29 @@ package command
 import (
 	"log"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/isaialcantara/toyredis/internal/resp"
 )
 
-type commandHandler func(resp.BulkArray) []byte
-
-type commandNode struct {
-	handler  commandHandler
-	children map[string]*commandNode
+type command struct {
+	handler func(resp.BulkArray) []byte
+	name    string
+	summary string
 }
 
 type BasicDispatcher struct {
-	rootCommand *commandNode
+	commands map[string]*command
 }
 
 var _ Dispatcher = (*BasicDispatcher)(nil)
 
 func NewBasicDispatcher() *BasicDispatcher {
-	dispatcher := &BasicDispatcher{
-		rootCommand: &commandNode{
-			children: make(map[string]*commandNode),
+	return &BasicDispatcher{
+		commands: map[string]*command{
+			"PING": {name: "ping", summary: "Pings the server.", handler: pingHandler},
+			"ECHO": {name: "echo", summary: "Echoes the givem message.", handler: echoHandler},
 		},
 	}
-
-	dispatcher.
-		registerCommand([]string{"PING"}, pingHandler).
-		registerCommand([]string{"ECHO"}, echoHandler)
-
-	return dispatcher
 }
 
 func (d *BasicDispatcher) Dispatch(bulkArray resp.BulkArray) []byte {
@@ -40,39 +33,35 @@ func (d *BasicDispatcher) Dispatch(bulkArray resp.BulkArray) []byte {
 		return ErrCommandEmpty.ToRESP()
 	}
 
-	node := d.rootCommand
-	consumed := 0
-	for _, bulkString := range bulkArray {
-		if !utf8.Valid(bulkString) {
-			return ErrCommandInvalid.ToRESP()
-		}
-		key := strings.ToUpper(string(bulkString))
-		if nextCommand, ok := node.children[key]; ok {
-			node = nextCommand
-			consumed++
-		} else {
-			break
-		}
+	cmd, args := d.findCommand(bulkArray)
+	if cmd == nil {
+		log.Printf("invalid command: %q", bulkArray.ToRESP())
+		return ErrCommandInvalid.ToRESP()
 	}
-
-	if node.handler != nil {
-		return node.handler(bulkArray[consumed:])
-	}
-	log.Printf("invalid command: %q", bulkArray.ToRESP())
-	return ErrCommandInvalid.ToRESP()
+	return cmd.handler(args)
 }
 
-func (d *BasicDispatcher) registerCommand(path []string, handler commandHandler) *BasicDispatcher {
-	node := d.rootCommand
-	for _, commandPart := range path {
-		key := strings.ToUpper(commandPart)
-		if node.children[key] == nil {
-			node.children[key] = &commandNode{children: make(map[string]*commandNode)}
+func (d *BasicDispatcher) findCommand(bulkArray resp.BulkArray) (*command, resp.BulkArray) {
+	var path string
+	var cmd *command
+	var argsStart int
+	for i, bulk := range bulkArray {
+		part := strings.ToUpper(string(bulk))
+		if i == 0 {
+			path = part
+		} else {
+			path += " " + part
 		}
-		node = node.children[key]
+
+		if value, ok := d.commands[path]; ok {
+			cmd = value
+			argsStart = i + 1
+			continue
+		}
+		break
 	}
-	node.handler = handler
-	return d
+
+	return cmd, bulkArray[argsStart:]
 }
 
 func pingHandler(args resp.BulkArray) []byte {
