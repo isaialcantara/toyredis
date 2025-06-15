@@ -23,7 +23,7 @@ func NewBasicDispatcher() *BasicDispatcher {
 	return &BasicDispatcher{
 		commands: map[string]*command{
 			"PING": {name: "ping", summary: "Pings the server.", handler: pingHandler},
-			"ECHO": {name: "echo", summary: "Echoes the givem message.", handler: echoHandler},
+			"ECHO": {name: "echo", summary: "Returns message.", handler: echoHandler},
 		},
 	}
 }
