@@ -28,7 +28,6 @@ enable = [
   'ireturn',
   'mirror',
   'misspell',
-  'mnd',
   'nonamedreturns',
   'prealloc',
   'predeclared',
